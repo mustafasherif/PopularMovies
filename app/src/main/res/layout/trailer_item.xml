@@ -6,16 +6,16 @@
     >
 
 
-<TextView
-    android:drawablePadding="4dip"
-    android:paddingLeft="4dip"
-    android:paddingRight="4dip"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center"
-    android:id="@+id/trailer_id"
-    android:drawableStart="@drawable/ic_play_button_sing"
+    <TextView
+        android:drawablePadding="4dip"
+        android:paddingLeft="4dip"
+        android:paddingRight="4dip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:id="@+id/trailer_id"
+        android:drawableStart="@drawable/ic_play_button_sing"
 
-    />
+        />
 
 </FrameLayout>

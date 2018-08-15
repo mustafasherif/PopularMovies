@@ -3,11 +3,9 @@ package com.example.mustafa.popularmovies;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.support.annotation.NonNull;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -35,7 +33,7 @@ import static com.example.mustafa.popularmovies.BuildConfig.APIKey;
 public class MainActivity extends AppCompatActivity {
 
 
-    private RecyclerView recyclerView;
+    public static RecyclerView recyclerView;
     public static ProgressBar mProgressBar;
     public static MoviesAdapter mMoviesAdapter;
     public static ArrayList<MovieItem> movieItems,storedMovieItems;
@@ -49,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         recyclerView=(RecyclerView) findViewById(R.id.mRecycleView);
@@ -61,15 +59,24 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new GridLayoutManager(getApplicationContext(),2));
         recyclerView.setAdapter(mMoviesAdapter);
 
-        final SharedPreferences preferences=getPreferences(Context.MODE_PRIVATE);
+        if(savedInstanceState!=null){
+            state=savedInstanceState.getInt("state");
+        }else {
+            connectionTask=new ConnectionTask(getApplicationContext());
+            if(isOnline()){
+                connectionTask.execute(popular_URL);
+            } else {
+                Toast.makeText(getApplicationContext(), R.string.check_connection, Toast.LENGTH_SHORT).show();
+            }
+        }
 
         MovieViewModel movieViewModel= ViewModelProviders.of(this, new ViewModelFactory(this.getApplication(),0)).get(MovieViewModel.class);
         movieViewModel.getmAllMovies().observe(this, new Observer<List<MovieItem>>() {
             @Override
             public void onChanged(@Nullable List<MovieItem> mMovieItems) {
                 storedMovieItems= (ArrayList<MovieItem>) mMovieItems;
-                mMoviesAdapter.changeSorting(storedMovieItems);
-                if(preferences.getInt("state",0)==R.id.Favorite){
+                if(state==R.id.Favorite){
+                    mMoviesAdapter.changeSorting(storedMovieItems);
                     mMoviesAdapter.notifyDataSetChanged();
                 }
             }
@@ -131,12 +138,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
-
-        SharedPreferences preferences=getPreferences(Context.MODE_PRIVATE);
-        preferences.edit().putInt("state",state).apply();
-
-
-
+        savedInstanceState.putInt("state",state);
+        savedInstanceState.putParcelable("manager", recyclerView.getLayoutManager().onSaveInstanceState());
+        savedInstanceState.putParcelableArrayList("movies",movieItems);
 
     }
 
@@ -145,30 +149,19 @@ public class MainActivity extends AppCompatActivity {
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
 
-        SharedPreferences preferences=getPreferences(Context.MODE_PRIVATE);
-        state = preferences.getInt("state",0);
+        if(savedInstanceState != null)
+        {
+            Parcelable savedRecyclerLayoutState = savedInstanceState.getParcelable("manager");
+            recyclerView.getLayoutManager().onRestoreInstanceState(savedRecyclerLayoutState);
+            movieItems=savedInstanceState.getParcelableArrayList("movies");
+        }
 
 
-    }
+        state = savedInstanceState.getInt("state",0);
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if(state==R.id.most_popular||state==0){
-            connectionTask=new ConnectionTask(getApplicationContext());
-            if(isOnline()){
-                connectionTask.execute(popular_URL);
-            } else {
-                Toast.makeText(getApplicationContext(), R.string.check_connection, Toast.LENGTH_SHORT).show();
-            }
-        }else if (state==R.id.top_rated){
-
-            connectionTask=new ConnectionTask(getApplicationContext());
-            if(isOnline()){
-                connectionTask.execute(top_URL);
-            } else {
-                Toast.makeText(getApplicationContext(), R.string.check_connection, Toast.LENGTH_SHORT).show();
-            }
+        if(state==R.id.most_popular||state==R.id.top_rated||state==0){
+            mMoviesAdapter.changeSorting(movieItems);
+            mMoviesAdapter.notifyDataSetChanged();
 
         }else if(state==R.id.Favorite){
             mProgressBar.setVisibility(View.VISIBLE);
