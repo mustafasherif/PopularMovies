@@ -95,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        recyclerView.setLayoutManager(new GridLayoutManager(getApplicationContext(),2));
         switch (item.getItemId()){
             case R.id.most_popular:
                 connectionTask=new ConnectionTask(getApplicationContext());
