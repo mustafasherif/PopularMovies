@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+    <string name="most_popular">Most Popular</string>
+    <string name="top_rated">Top Rated</string>
+    <string name="movie_name">Movie Name</string>
+    <string name="mark">Mark as favorite</string>
+    <string name="Favorite">Favorite</string>
+    <string name="movie_name_test">Pulb Fiction</string>
+    <string name="check_connection">check connection</string>
+</resources>
